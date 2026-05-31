@@ -1,24 +1,36 @@
-import { IsString, IsNotEmpty, IsNumber, Min, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateMenuDto {
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Nasi Goreng Spesial', description: 'Nama makanan atau minuman' })
   @IsString()
+  @IsNotEmpty()
   name!: string;
 
-  @IsOptional()
+  @ApiProperty({ example: 'Nasi goreng dengan telur, ayam, dan sayuran', description: 'Deskripsi singkat tentang menu' })
   @IsString()
+  @IsOptional()
   description?: string;
 
-  @IsNumber()
+  @ApiProperty({ example: 15000, description: 'Harga dalam satuan Rupiah' })
   @Min(0)
+  @IsNumber()
+  @IsNotEmpty()
   price!: number;
 
+  @ApiProperty({ example: 'MAKANAN', description: 'Kategori item (MAKANAN / MINUMAN)', enum: ['MAKANAN', 'MINUMAN'] })
+  @IsEnum(['MAKANAN', 'MINUMAN'])
   @IsNotEmpty()
-  @IsString()
   category!: string;
 
+  @ApiProperty({ example: 'https://example.com/images/nasi-goreng.jpg', description: 'URL gambar untuk menu' })
+  @IsString()
   @IsOptional()
-  @IsNumber()
+  imageUrl?: string;
+
+  @ApiProperty({ example: 10, description: 'Jumlah stok item menu' })
   @Min(0)
+  @IsNumber()
+  @IsOptional()
   stock?: number;
 }
