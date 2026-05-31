@@ -16,7 +16,7 @@ RUN npm ci --omit=dev
 COPY prisma ./prisma
 RUN npx prisma generate
 COPY --from=builder /app/dist ./dist
-COPy --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 EXPOSE 3000
 CMD ["node", "dist/main"]
