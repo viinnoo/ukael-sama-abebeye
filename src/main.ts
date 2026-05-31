@@ -17,7 +17,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    customSiteTitle: 'UKL Sama Abebeye API Docs',
+  });
 
   const port = process.env.port || 3000;
 
