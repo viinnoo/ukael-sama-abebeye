@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -57,5 +58,41 @@ async findOne(id: number) {
     }
 
     return user;
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, username: true, role: true, createdAt: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User tidak ditemukan!');
+    }
+
+    return {statusCode: 200, message: 'Profile user ditemukan!', data: user};
+  }
+
+  async updateProfile(userId: number, updateData: { username?: string; name?: string; email?: string }) {
+    const userExists = await this.prisma.user.findUnique({
+      where: { id: userId },
+    }); 
+
+    if (!userExists) {
+      throw new NotFoundException('User tidak ditemukan!');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        role: true,
+      },
+    });
+
+    return { statusCode: 200, message: 'Profile user berhasil diperbarui!', data: updatedUser };
   }
 }

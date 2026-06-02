@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UsePipes, ValidationPipe, UseGuards, ParseIntPipe, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, UsePipes, ValidationPipe, UseGuards, ParseIntPipe, Param, Req, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -31,6 +31,31 @@ export class UserController {
     return await this.userService.create(createUserDto);
   }
 
+  @Get('profile')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mendapatkan data profil user yang sedang login', description: 'Endpoint ini digunakan untuk memunculkan data akun milik customer/admin yang sedang login berdasarkan token JWT.' })
+  @ApiResponse({ status: 200, description: 'Data profil berhasil diambil.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized. Token tidak valid.' })
+  async getProfile(@Req() req: any) {
+    const user = req.user;
+    return await this.userService.getProfile(user.userId); 
+  }
+
+  @Patch('profile/update')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mengupdate data profil user yang sedang login', description: 'Endpoint ini digunakan untuk mengedit data username atau nama milik user yang sedang aktif.' })
+  @ApiResponse({ status: 200, description: 'Profil berhasil diperbarui.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async updateProfile(
+    @Req() req: any, 
+    @Body() updateData: { username?: string; name?: string }
+  ) {
+    const user = req.user;
+    return await this.userService.updateProfile(user.userId, updateData);
+  } 
+
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mengambil semua pengguna', description: 'Endpoint ini digunakan untuk mengambil semua pengguna yang terdaftar. Hanya dapat diakses oleh admin.' })
@@ -53,5 +78,4 @@ export class UserController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return await this.userService.findOne(id);
   }
-
 }
