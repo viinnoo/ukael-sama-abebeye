@@ -70,17 +70,9 @@ export class OrderService {
       where: {
         userId: userId,
       },
-      include: {
-        orderDetails: {
-          include: {
-            menu: true,
-          },
-        },
-      },
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
-
 }

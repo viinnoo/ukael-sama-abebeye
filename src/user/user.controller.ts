@@ -47,8 +47,38 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mengupdate data profil user yang sedang login', description: 'Endpoint ini digunakan untuk mengedit data username atau nama milik user yang sedang aktif.' })
-  @ApiResponse({ status: 200, description: 'Profil berhasil diperbarui.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 200, description: 'Profil berhasil diperbarui.',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Profile user ditemukan!',
+        data: {
+          id: 1,
+          name: 'John Doe',
+          username: 'johndoe',
+          role: 'CUSTOMER',
+          createdAt: '2023-01-01T00:00:00.000Z',
+          updatedAt: '2023-01-01T00:00:00.000Z'
+        }
+      }
+    }
+   })
+  @ApiResponse({ status: 400, description: 'Permintaan tidak valid. Pastikan data yang dikirim benar dan tidak kosong.',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Tidak ada data profil yang dikirim untuk diperbarui.'
+      }
+    }
+   })
+  @ApiResponse({ status: 401, description: 'Unauthorized.',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized. Token tidak valid.'
+      }
+    }
+   })
   async updateProfile(
     @Req() req: any, 
     @Body() updateData: { username?: string; name?: string }
