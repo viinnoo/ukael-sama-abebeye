@@ -18,8 +18,8 @@ export class CreateMenuDto {
   @IsNotEmpty()
   price!: number;
 
-  @ApiProperty({ example: 'MAKANAN', description: 'Kategori item (MAKANAN / MINUMAN)', enum: ['MAKANAN', 'MINUMAN'] })
-  @IsEnum(['MAKANAN', 'MINUMAN'])
+  @ApiProperty({ example: 'MAKANAN', description: 'Kategori item (MAKANAN / MINUMAN)', enum: ['MAKANAN', 'MINUMAN', 'LAINNYA'] })
+  @IsEnum(['MAKANAN', 'MINUMAN', 'LAINNYA'])
   @IsNotEmpty()
   category!: string;
 
