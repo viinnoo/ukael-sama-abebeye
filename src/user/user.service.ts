@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -77,6 +77,10 @@ async findOne(id: number) {
     const userExists = await this.prisma.user.findUnique({
       where: { id: userId },
     }); 
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new BadRequestException('Tidak ada data profil yang dikirim untuk diperbarui.');
+    }
 
     if (!userExists) {
       throw new NotFoundException('User tidak ditemukan!');
