@@ -39,7 +39,8 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized. Token tidak valid.' })
   async getProfile(@Req() req: any) {
     const user = req.user;
-    return await this.userService.getProfile(user.userId); 
+    const finalId = user.id ?? user.userId ?? user.sub;
+    return await this.userService.getProfile(Number(finalId)); 
   }
 
   @Patch('profile/update')
@@ -53,7 +54,8 @@ export class UserController {
     @Body() updateData: { username?: string; name?: string }
   ) {
     const user = req.user;
-    return await this.userService.updateProfile(user.userId, updateData);
+    const finalId = user.id ?? user.userId ?? user.sub;
+    return await this.userService.updateProfile(Number(finalId), updateData);
   } 
 
   @Get()
