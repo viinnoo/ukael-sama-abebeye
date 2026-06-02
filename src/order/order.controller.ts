@@ -57,7 +57,7 @@ export class OrderController {
   async create(@Body() createOrderDto: CreateOrderDto, @Req() req: any) {
     const user = req.user; 
     
-    return await this.orderService.createOrder(createOrderDto, user);
+    return await this.orderService.createOrder(user.id, user.username, createOrderDto.items);
   }
 
   @Get()
@@ -91,6 +91,6 @@ export class OrderController {
   async findAll(@Req() req: any) {
     const user = req.user;
     
-    return await this.orderService.getOrders(user);
+    return await this.orderService.findAllByUser(user.id);
   }
 }

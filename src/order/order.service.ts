@@ -1,79 +1,75 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service'; // Pastikan path ke PrismaService sudah sesuai dengan struktur foldermu
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-  async createOrder(createOrderDto: CreateOrderDto, user: any) {
-    const { items } = createOrderDto;
-
+  async createOrder(
+    userId: number, 
+    username: string, 
+    items: { menuId: number; quantity: number }[]
+  ) {
     return await this.prisma.$transaction(async (tx) => {
-      let total = 0;
-      const detailRecords: any[] = [];
+      
+      const itemsWithPrice = await Promise.all(
+        items.map(async (item) => {
+          const menu = await tx.menu.findUnique({
+            where: { id: item.menuId },
+          });
 
-      for (const item of items) {
-        // 1. Cek menu dan stoknya
-        const menu = await tx.menu.findUnique({
-          where: { id: item.menuId },
-        });
+          if (!menu) {
+            throw new NotFoundException(`Menu dengan ID ${item.menuId} tidak ditemukan.`);
+          }
 
-        if (!menu || menu.stock < item.quantity) {
-          throw new BadRequestException(
-            `Stok menu dengan ID ${item.menuId} tidak mencukupi atau tidak ditemukan`
-          );
-        }
+          return {
+            menuId: item.menuId,
+            quantity: item.quantity,
+            price: menu.price,
+            subTotal: menu.price * item.quantity,
+          };
+        })
+      );
 
-        await tx.menu.update({
-          where: { id: item.menuId },
-          data: { stock: menu.stock - item.quantity },
-        });
+      const totalCalculated = itemsWithPrice.reduce((sum, item) => sum + item.subTotal, 0);
 
-        const itemTotal = menu.price * item.quantity;
-        total += itemTotal;
-        
-        detailRecords.push({
-          menuId: item.menuId,
-          quantity: item.quantity,
-          price: menu.price,
-        });
-      }
-
-        const order = await tx.order.create({
-          data: {
-            userId: user.userId,      
-            username: user.username,  
-            totalPrice: total,
-            orderDetails: {
-              create: detailRecords,
-            },
-          },
-          include: {
-            orderDetails: true,
-          },
-        });
-
-        return order;
+      const order = await tx.order.create({
+        data: {
+          userId: userId,
+          username: username,
+          totalPrice: totalCalculated,
+        },
       });
+
+      const orderDetailsData = itemsWithPrice.map((item) => ({
+        orderId: order.id,
+        menuId: item.menuId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      await tx.orderDetail.createMany({
+        data: orderDetailsData,
+      });
+
+      return {
+        statusCode: 201,
+        message: 'Order berhasil dibuat!',
+        data: {
+          orderId: order.id,
+          username: order.username,
+          totalPrice: order.totalPrice,
+          createdAt: order.createdAt,
+        },
+      };
+    });
   }
 
-  async getOrders(user: any) {
-    if (user.role === 'CUSTOMER') {
-      return await this.prisma.order.findMany({
-        where: { userId: user.userId },
-        include: {
-          orderDetails: {
-            include: {
-              menu: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-    }
-
+  async findAllByUser(userId: number) {
     return await this.prisma.order.findMany({
+      where: {
+        userId: userId,
+      },
       include: {
         orderDetails: {
           include: {
@@ -81,7 +77,9 @@ export class OrderService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
