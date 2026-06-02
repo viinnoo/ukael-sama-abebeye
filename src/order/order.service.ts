@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Pastikan path ke PrismaService sudah sesuai dengan struktur foldermu
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OrderService {
