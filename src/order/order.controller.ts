@@ -52,6 +52,11 @@ export class OrderController {
   async findAll(@Req() req: any) {
     const user = req.user;
 
-    return await this.orderService.findAllByUser(user.id);
+    if (user.role === 'ADMIN') {
+      return await this.orderService.findAllByAdmin();
+    }
+
+    const finalUserId = user.id?? user.userId?? user.sub;
+    return await this.orderService.findAllByUser(Number(finalUserId));
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Req } from '@nestjs/common';
 import { OrderDetailService } from './order-detail.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -48,7 +48,11 @@ export class OrderDetailController {
    })
   @UseGuards(JwtAuthGuard)
   @Roles('ADMIN')
-  async getByOrder(@Param('orderId', ParseIntPipe) orderId: number) {
-    return await this.orderDetailService.findByOrder(orderId);
+  async findByOrder(@Param('orderId', ParseIntPipe) orderId: number, @Req() req: any) {
+    const user = req.user;
+
+    const finalUserId = user.id?? user.userId?? user.sub;
+
+    return await this.orderDetailService.getByOrderId(orderId, Number(finalUserId), user.role);
   }
 }

@@ -75,4 +75,19 @@ export class OrderService {
       },
     });
   }
+
+  async findAllByAdmin() {
+    return await this.prisma.order.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }
